@@ -1,0 +1,78 @@
+{
+  "realm": "sus",
+  "enabled": true,
+  "accessTokenLifespan": 1800,
+  "roles": {
+    "realm": [
+      { "name": "MEDICO", "description": "Physician" },
+      { "name": "ATENDENTE", "description": "Health unit front desk" },
+      { "name": "PACIENTE", "description": "Patient (username is the CNS)" },
+      { "name": "FARMACEUTICO", "description": "Pharmacist" },
+      { "name": "GESTOR", "description": "Health manager" },
+      { "name": "SERVICE", "description": "Machine-to-machine calls" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "sus-cli",
+      "name": "SUS Jornada CLI and Swagger",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": false
+    },
+    {
+      "clientId": "pharmacy-service",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "pharmacy-dev-secret",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false
+    }
+  ],
+  "users": [
+    {
+      "username": "dra.ana", "enabled": true, "emailVerified": true,
+      "firstName": "Ana", "lastName": "Ribeiro", "email": "dra.ana@sus-jornada.test",
+      "credentials": [{ "type": "password", "value": "Sus@12345", "temporary": false }],
+      "realmRoles": ["MEDICO"]
+    },
+    {
+      "username": "atendente.joao", "enabled": true, "emailVerified": true,
+      "firstName": "Joao", "lastName": "Pereira", "email": "joao@sus-jornada.test",
+      "credentials": [{ "type": "password", "value": "Sus@12345", "temporary": false }],
+      "realmRoles": ["ATENDENTE"]
+    },
+    {
+      "username": "farm.carla", "enabled": true, "emailVerified": true,
+      "firstName": "Carla", "lastName": "Mendes", "email": "carla@sus-jornada.test",
+      "credentials": [{ "type": "password", "value": "Sus@12345", "temporary": false }],
+      "realmRoles": ["FARMACEUTICO"]
+    },
+    {
+      "username": "gestor.paulo", "enabled": true, "emailVerified": true,
+      "firstName": "Paulo", "lastName": "Almeida", "email": "paulo@sus-jornada.test",
+      "credentials": [{ "type": "password", "value": "Sus@12345", "temporary": false }],
+      "realmRoles": ["GESTOR"]
+    },
+    {
+      "username": "211512751720009", "enabled": true, "emailVerified": true,
+      "firstName": "Maria", "lastName": "Souza", "email": "maria@sus-jornada.test",
+      "credentials": [{ "type": "password", "value": "Sus@12345", "temporary": false }],
+      "realmRoles": ["PACIENTE"]
+    },
+    {
+      "username": "153325085310009", "enabled": true, "emailVerified": true,
+      "firstName": "Jose", "lastName": "Lima", "email": "jose@sus-jornada.test",
+      "credentials": [{ "type": "password", "value": "Sus@12345", "temporary": false }],
+      "realmRoles": ["PACIENTE"]
+    },
+    {
+      "username": "service-account-pharmacy-service",
+      "enabled": true,
+      "serviceAccountClientId": "pharmacy-service",
+      "realmRoles": ["SERVICE"]
+    }
+  ]
+}
