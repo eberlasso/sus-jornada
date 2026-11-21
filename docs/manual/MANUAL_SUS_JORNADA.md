@@ -1445,10 +1445,11 @@ services:
   # ───────────── Service discovery ─────────────
   consul:
     image: hashicorp/consul:1.21
-    command: ["agent", "-dev", "-client=0.0.0.0", "-ui", "-config-dir=/consul/config"]
+    command: ["agent", "-dev", "-client=0.0.0.0", "-ui", "-config-dir=/consul/sus-config"]
     ports: ["8500:8500"]
     volumes:
-      - ./infra/consul:/consul/config:ro
+      # Not /consul/config: the image entrypoint chowns that folder and fails on a read-only mount
+      - ./infra/consul:/consul/sus-config:ro
     healthcheck:
       test: ["CMD", "consul", "members"]
       interval: 5s
@@ -1486,6 +1487,7 @@ volumes:
 | `ports: ["5433:5432"]` | Cada PostgreSQL usa a porta 5432 **dentro** do container. No `localhost` (Ubuntu e Windows), as portas são 5433 a 5437 para não conflitarem. Entre containers, use o nome do serviço e a porta 5432 (`postgres-patient:5432`) |
 | `healthcheck` | Os serviços Java só sobem depois que o banco responde (`depends_on: condition: service_healthy`) |
 | `KC_HOSTNAME` + `KC_HOSTNAME_BACKCHANNEL_DYNAMIC` | Os tokens sempre têm `iss = http://localhost:8180/realms/sus`, mas os containers buscam as chaves públicas em `http://keycloak:8180` |
+| `./infra/consul:/consul/sus-config:ro` | ⚠️ Ao iniciar, a imagem do Consul faz `chown` em `/consul/config`. Montar a pasta do projeto ali como somente leitura (`:ro`) faz o container parar com `chown: /consul/config: Read-only file system`. Por isso ela é montada em `/consul/sus-config`, e o `-config-dir` aponta para esse caminho |
 | `NEO4J_PLUGINS: '["apoc"]'` | Baixa o APOC, que traz o algoritmo de Dijkstra usado na logística |
 | `grafana/otel-lgtm` | Um container só com Grafana, Loki (logs), Tempo (traces), Prometheus (métricas) e o OpenTelemetry Collector. Ideal para desenvolvimento. Depois que funcionar, fixe a versão: `docker image inspect grafana/otel-lgtm --format '{{index .RepoTags 0}} {{.Id}}'` |
 
@@ -1508,8 +1510,8 @@ docker run --rm -p 8180:8180 -e KC_BOOTSTRAP_ADMIN_USERNAME=admin -e KC_BOOTSTRA
 2. **Criar o realm:** no canto superior esquerdo, clique no seletor de realm (mostra `Keycloak` ou `master`) → **Create realm** → **Realm name**: `sus` → **Create**.
 3. **Criar papéis:** menu lateral **Realm roles** → **Create role** → **Role name**: `MEDICO` → **Save**. Repita para `ATENDENTE`, `PACIENTE`, `FARMACEUTICO`, `GESTOR` e `SERVICE`.
 4. **Criar o client de testes (público):** **Clients** → **Create client** → **Client ID**: `sus-cli` → **Next** → em **Capability config** deixe **Client authentication: Off** e marque **Direct access grants** → **Next** → **Save**.
-5. **Criar o client da farmácia (confidencial):** **Clients** → **Create client** → **Client ID**: `pharmacy-service` → **Next** → **Client authentication: On**, desmarque **Standard flow**, marque **Service accounts roles** → **Next** → **Save**. Na aba **Credentials**, você vê o **Client secret**. Na aba **Service accounts roles** → **Assign role** → filtre por **realm roles** → marque `SERVICE` → **Assign**.
-6. **Criar um usuário:** **Users** → **Create new user** → **Username**: `dra.ana`, **Email**: `dra.ana@sus-jornada.test`, **First name**: `Ana`, **Last name**: `Ribeiro`, **Email verified: On** → **Create**. Aba **Credentials** → **Set password** → digite a senha, **Temporary: Off** → **Save**. Aba **Role mapping** → **Assign role** → `MEDICO` → **Assign**.
+5. **Criar o client da farmácia (confidencial):** **Clients** → **Create client** → **Client ID**: `pharmacy-service` → **Next** → **Client authentication: On**, desmarque **Standard flow**, marque **Service accounts roles** → **Next** → **Save**. Na aba **Credentials**, você vê o **Client secret**. Na aba **Service accounts roles** → **Assign role** → no submenu, escolha **Realm roles** (o `SERVICE` é um papel do realm, não do client) → marque `SERVICE` → **Assign**.
+6. **Criar um usuário:** **Users** → **Create new user** → **Username**: `dra.ana`, **Email**: `dra.ana@sus-jornada.test`, **First name**: `Ana`, **Last name**: `Ribeiro`, **Email verified: On** → **Create**. Aba **Credentials** → **Set password** → digite a senha, **Temporary: Off** → **Save**. Aba **Role mapping** → **Assign role** → no submenu, escolha **Realm roles** (o `MEDICO` foi criado no passo 3 como papel do realm, por isso não aparece em *Client roles*) → marque `MEDICO` → **Assign**. A tabela passa a mostrar `MEDICO` ao lado de `default-roles-sus`.
 7. **Ver o token:** no terminal do Ubuntu:
 
 ```bash

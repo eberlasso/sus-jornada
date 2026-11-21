@@ -1,0 +1,14 @@
+{
+  "service": {
+    "name": "pharmacy-service",
+    "id": "pharmacy-service-1",
+    "address": "pharmacy-service",
+    "port": 8084,
+    "tags": ["quarkus"],
+    "check": {
+      "http": "http://pharmacy-service:8084/q/health/ready",
+      "interval": "10s",
+      "timeout": "2s"
+    }
+  }
+}

@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  workflow_dispatch:   # temporário: só roda manualmente até existir o primeiro serviço
+  # push:
+  #   branches: [main]
+  # pull_request:
+
+jobs:
+  build:
+    name: ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          #- patient-service
+          #- health-record-service
+          #- scheduling-service
+          #- pharmacy-service
+          #- central-service
+          #- notification-service
+          #- api-gateway
+    defaults:
+      run:
+        working-directory: services/${{ matrix.service }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      - name: Build and test
+        run: ./mvnw -B verify
